@@ -1,24 +1,74 @@
 import numpy as np
 
 
-def get_max_pivot_value_row(A, i, m):
-    max_value_index = i
-    max_value = abs(A[i, i])
-    for j in range(i + 1, m):
-        curr = abs(A[j, i])
+def get_max_pivot_value_row(A: np.ndarray, col_index: int, n_rows: int):
+    """
+    Gets the index of the row that contains the maximum (absolute) value
+    Parameters
+    ----------
+    A: np.ndarray
+        The input matrix
+    col_index: int
+        The row index
+    n_rows: int
+        The number of rows
+
+    Returns
+    -------
+    max_value_index: int
+        The row index
+    """
+    max_value_index = col_index
+    max_value = abs(A[col_index, col_index])
+    for i in range(col_index + 1, n_rows):
+        curr = abs(A[i, col_index])
         if curr > max_value:
             max_value = curr
-            max_value_index = j
+            max_value_index = i
     return max_value_index
 
 
-def get_max_pivot_value_coefficients(A, i, j, m):
-    A = A[i:, j:m]
-    row_index, col_index = np.where(abs(A.max()) == abs(A))
-    return row_index[0] + i, col_index[0] + j
+def get_max_pivot_value_row_col(
+    A: np.ndarray, row_index: int, col_index: int, n_rows: int
+):
+    """
+    Gets col and row index that contains the maximum (absolute) value
+
+    Parameters
+    ----------
+    A: np.ndarray
+        The input matrix
+    row_index: int
+        The row index
+    col_index: int
+        The col index
+    n_rows: int
+        The number of rows
+
+    Returns
+    -------
+    max_value_row_index: int
+        The row index
+    min_value_row_index: int
+        The col index
+    """
+    A = A[row_index:, col_index:n_rows]
+    _row_index, _col_index = np.where(abs(A.max()) == abs(A))
+    return _row_index[0] + row_index, _col_index[0] + col_index
 
 
-def reorder_solution_array(arr, swaps):
+def reorder_solution_array(arr: np.ndarray, swaps: list):
+    """
+
+    Parameters
+    ----------
+    arr
+    swaps
+
+    Returns
+    -------
+
+    """
     if swaps:
         for i, j in swaps[::-1]:
             tmp = arr[j]
@@ -91,7 +141,7 @@ def forward_substitution(A, swaps=None, rref=False):
     return reorder_solution_array(solutions, swaps)
 
 
-def gauss(A):
+def gauss(A: np.ndarray):
     """
     Implements a simplified version of Gauss elimination method
 
@@ -102,65 +152,72 @@ def gauss(A):
 
     Returns
     -------
+    A: numpy.ndarray
+        The augmented matrix in row echelon form
     """
     m, n = A.shape
-    i = j = 0
 
-    while i < m and j < n:
-        for k in range(j + 1, m):
-            A[k:] = A[k:] - (A[k, i] / A[i, i]) * A[i, :]
-        i += 1
-        j += 1
+    for i in range(m):
+        for j in range(i + 1, m):
+            A[j:] = A[j:] - (A[j, i] / A[i, i]) * A[i, :]
     return A
 
 
-def gauss_partial_pivoting(A):
+def gauss_partial_pivoting(A: np.ndarray):
     """
     Implements a simplified version of Gauss elimination method with partial pivoting
     Parameters
     ----------
     A: numpy.ndarray
+        The augmented matrix for a system of linear equations
 
     Returns
     -------
+    A: np.ndarray
+        The input matrix in row echelon form
+
+    swaps: list
+        A list of tuples, where each tuple represents a swap operation between rows
     """
     m, n = A.shape
-    i = j = 0
     swaps = []
 
-    while i < n and j < m:
+    for i in range(m):
         max_index = get_max_pivot_value_row(A, i, m)
 
         if max_index != i:
             A[[i, max_index]] = A[[max_index, i]]
             swaps.append((i, max_index))
 
-        for k in range(j + 1, m):
-            A[k, :] = A[k, :] - (A[k, i] / A[i, i]) * A[i, :]
-
-        i += 1
-        j += 1
+        for j in range(i + 1, m):
+            A[j, :] = A[j, :] - (A[j, i] / A[i, i]) * A[i, :]
 
     return A, swaps
 
 
 def gauss_total_pivoting(A):
     """
+    Gauss method with total pivoting
 
     Parameters
     ----------
-    A
+    A: np.ndarray
+        A matrix
 
     Returns
     -------
+    A: np.ndarray
+        The input matrix in row echelon form
 
+    swaps: list
+        A list of tuples, where each tuple represents a swap operation between rows
     """
     m, n = A.shape
     i = j = 0
     swaps = []
 
     while i < n and j < m:
-        max_row_index, max_col_index = get_max_pivot_value_coefficients(A, i, j, m)
+        max_row_index, max_col_index = get_max_pivot_value_row_col(A, i, j, m)
         A[[j, max_row_index]] = A[[max_row_index, j]]
         A[:, [i, max_col_index]] = A[:, [max_col_index, i]]
 
@@ -176,32 +233,49 @@ def gauss_total_pivoting(A):
     return A, swaps
 
 
-def gauss_jordan(A):
+def gauss_jordan(A: np.ndarray):
+    """
+    Gauss Jordan method
+
+    Parameters
+    ----------
+    A: np.ndarray
+        A matrix
+
+    Returns
+    -------
+    A_rref: np.ndarray
+        The input matrix in reduced row echelon form
+
+    swaps: list
+        A list of tuples, where each tuple represents a swap operation between rows
+    """
+    A_rref, swaps = gauss_total_pivoting(A)
+
+    m, n = A_rref.shape
+    i = m - 1
+
+    while i >= 0:
+        A_rref[i, :] = A_rref[i, :] / A_rref[i, i]
+        for k in range(i - 1, -1, -1):
+            A_rref[k, :] = A_rref[k, :] - (A_rref[k, i] / A_rref[i, i]) * A_rref[i, :]
+        i -= 1
+    return A_rref, swaps
+
+
+def gauss_seidel_method(A, b, max_iter=10):
     """
 
     Parameters
     ----------
     A
-    get_solutions
+    b
+    max_iter
 
     Returns
     -------
 
     """
-    A_ref, swaps = gauss_total_pivoting(A)
-
-    m, n = A_ref.shape
-    i = m - 1
-
-    while i >= 0:
-        A_ref[i, :] = A_ref[i, :] / A_ref[i, i]
-        for k in range(i - 1, -1, -1):
-            A_ref[k, :] = A_ref[k, :] - (A_ref[k, i] / A_ref[i, i]) * A_ref[i, :]
-        i -= 1
-    return A_ref, swaps
-
-
-def gauss_seidel_method(A, b, max_iter=10):
     m, n = A.shape
     solutions = np.zeros(m)
     it = 0
