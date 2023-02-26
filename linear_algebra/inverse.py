@@ -1,24 +1,9 @@
 import numpy as np
-from reductions import gauss_jordan
+from linear_algebra.reductions import gauss_jordan
+from linear_algebra.utils import reorder_solution_matrix
 
 
-def reorder_solution_array(arr, swaps):
-    if swaps:
-        for i, j in swaps[::-1]:
-            tmp = arr[j]
-            arr[j] = arr[i]
-            arr[i] = tmp
-    return arr
-
-
-def reorder_solution_matrix(A, swaps):
-    if swaps:
-        for i, j in swaps[::-1]:
-            A[[i, j]] = A[[j, i]]
-    return A
-
-
-def gauss_jordan_inverse(A):
+def gauss_jordan_inverse(A: np.ndarray):
     """
 
     Parameters
@@ -29,6 +14,8 @@ def gauss_jordan_inverse(A):
 
     Returns
     -------
+    A_inv: np.ndarray
+        The inverse of input matrix A
     """
     m, n = A.shape
 
@@ -39,9 +26,3 @@ def gauss_jordan_inverse(A):
     A, swaps = gauss_jordan(A)
     A_inv = reorder_solution_matrix(A[:, n:], swaps)
     return A_inv
-
-
-X = np.array([[1.0, 2.0, -1.0], [2.0, 4.0, 5.0], [3.0, -1.0, -2.0]])
-
-X_1 = gauss_jordan_inverse(X)
-print(np.dot(X, X_1))

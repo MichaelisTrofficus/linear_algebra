@@ -1,144 +1,5 @@
 import numpy as np
-
-
-def get_max_pivot_value_row(A: np.ndarray, col_index: int, n_rows: int):
-    """
-    Gets the index of the row that contains the maximum (absolute) value
-    Parameters
-    ----------
-    A: np.ndarray
-        The input matrix
-    col_index: int
-        The row index
-    n_rows: int
-        The number of rows
-
-    Returns
-    -------
-    max_value_index: int
-        The row index
-    """
-    max_value_index = col_index
-    max_value = abs(A[col_index, col_index])
-    for i in range(col_index + 1, n_rows):
-        curr = abs(A[i, col_index])
-        if curr > max_value:
-            max_value = curr
-            max_value_index = i
-    return max_value_index
-
-
-def get_max_pivot_value_row_col(
-    A: np.ndarray, row_index: int, col_index: int, n_rows: int
-):
-    """
-    Gets col and row index that contains the maximum (absolute) value
-
-    Parameters
-    ----------
-    A: np.ndarray
-        The input matrix
-    row_index: int
-        The row index
-    col_index: int
-        The col index
-    n_rows: int
-        The number of rows
-
-    Returns
-    -------
-    max_value_row_index: int
-        The row index
-    min_value_row_index: int
-        The col index
-    """
-    A = A[row_index:, col_index:n_rows]
-    _row_index, _col_index = np.where(abs(A.max()) == abs(A))
-    return _row_index[0] + row_index, _col_index[0] + col_index
-
-
-def reorder_solution_array(arr: np.ndarray, swaps: list):
-    """
-
-    Parameters
-    ----------
-    arr
-    swaps
-
-    Returns
-    -------
-
-    """
-    if swaps:
-        for i, j in swaps[::-1]:
-            tmp = arr[j]
-            arr[j] = arr[i]
-            arr[i] = tmp
-    return arr
-
-
-def back_substitution(A, swaps=None, rref=False):
-    """
-    Back Substitution method for calculating the solutions of a matrix in row echelon form
-    Parameters
-    ----------
-    A: numpy.ndarray
-        A matrix in row echelon form
-    swaps: list
-        A list of tuples containing column swaps. These are necessary since each swap
-        changes the position of a solution, so, if we want to recover the original order
-        (x1, x2, ..., xn) we must pass explicitly this list of swaps.
-    rref: bool
-        If the input matrix is in reduced row echelon form simply take the last column.
-
-    Returns
-    -------
-    numpy.ndarray
-        An array containing the solutions to the system of linear equations
-    """
-    m, n = A.shape
-    if rref:
-        solutions = A[:, n - 1]
-    else:
-        solutions = np.zeros(m)
-        solutions[m - 1] = A[m - 1, n - 1] / A[m - 1, n - 2]
-        for i in range(m - 2, -1, -1):
-            solutions[i] = (
-                A[i, n - 1] - np.dot(A[i, i + 1 : n - 1], solutions[i + 1 :])
-            ) / A[i, i]
-    return reorder_solution_array(solutions, swaps)
-
-
-def forward_substitution(A, swaps=None, rref=False):
-    """
-    Back Substitution method for calculating the solutions of a matrix in row echelon form
-    Parameters
-    ----------
-    A: numpy.ndarray
-        A matrix in row echelon form
-    swaps: list
-        A list of tuples containing column swaps. These are necessary since each swap
-        changes the position of a solution, so, if we want to recover the original order
-        (x1, x2, ..., xn) we must pass explicitly this list of swaps.
-    rref: bool
-        If the input matrix is in reduced row echelon form simply take the last column.
-
-    Returns
-    -------
-    numpy.ndarray
-        An array containing the solutions to the system of linear equations
-    """
-    m, n = A.shape
-    if rref:
-        solutions = A[:, n - 1]
-    else:
-        solutions = np.zeros(m)
-        solutions[0] = A[0, n - 1] / A[0, 0]
-        for i in range(1, m):
-            solutions[i] = (
-                A[i, n - 1] - np.dot(A[i, : i + 1], solutions[: i + 1])
-            ) / A[i, i]
-    return reorder_solution_array(solutions, swaps)
+from linear_algebra.utils import get_max_pivot_value_row, get_max_pivot_value_row_col
 
 
 def gauss(A: np.ndarray):
@@ -263,18 +124,26 @@ def gauss_jordan(A: np.ndarray):
     return A_rref, swaps
 
 
-def gauss_seidel_method(A, b, max_iter=10):
+def gauss_seidel_method(A, b, max_iter=10, verbose=0):
     """
+    Implementation of the Gauss Seidel method, a class of iterative methods.
 
     Parameters
     ----------
-    A
-    b
-    max_iter
+    A: np.ndarray
+        The matrix of coefficients
+    b: np.ndarray
+
+    max_iter: int
+        The maximum number of iteration
+
+    verbose: int
+        Parameter to set the verbosity of the iterative process
 
     Returns
     -------
-
+    solutions: np.ndarray
+        An array containing the solutions
     """
     m, n = A.shape
     solutions = np.zeros(m)
@@ -292,16 +161,10 @@ def gauss_seidel_method(A, b, max_iter=10):
                 right_sum = np.dot(A[i, i + 1 :], solutions[i + 1 :])
                 left_sum = np.dot(A[i, :i], solutions[:i])
 
-            solutions[i] = (b[i] - right_sum - left_sum) / A[i, i]
+            solutions[i] = (b[i][0] - right_sum - left_sum) / A[i, i]
 
-        print(solutions)
+        if verbose > 0:
+            print(solutions)
         it += 1
 
     return solutions
-
-
-X1 = np.array([[4.0, -1.0, 1.0], [4.0, -8.0, 1.0], [-2.0, 1.0, 5.0]])
-
-b1 = np.array([7, -21, 15])
-
-X1_ref = gauss_seidel_method(X1, b1)

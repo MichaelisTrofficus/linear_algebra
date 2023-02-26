@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.testing import assert_array_equal
-from linear_algebra.reductions import (
+from linear_algebra.utils import (
     get_max_pivot_value_row,
     get_max_pivot_value_row_col,
     reorder_solution_array,
