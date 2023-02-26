@@ -34,7 +34,7 @@ def lu(A, b):
             P[[i, max_index]] = P[[max_index, i]]
 
         for k in range(j + 1, m):
-            mult = (U[k, i] / U[i, i])
+            mult = U[k, i] / U[i, i]
             L[k, i] = mult
             U[k, :] = U[k, :] - mult * U[i, :]
 
@@ -55,15 +55,9 @@ def lu(A, b):
     return x
 
 
-X_1 = np.array([
-    [1., 2., -1.],
-    [2., 4., 5.],
-    [3., -1., -2.]
-])
+X_1 = np.array([[1.0, 2.0, -1.0], [2.0, 4.0, 5.0], [3.0, -1.0, -2.0]])
 
-b_1 = np.array([2., 25., -5.])
+b_1 = np.array([2.0, 25.0, -5.0])
 
 solutions = lu(X_1, b_1)
 print(solutions)
-
-

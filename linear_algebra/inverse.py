@@ -41,12 +41,7 @@ def gauss_jordan_inverse(A):
     return A_inv
 
 
-X = np.array([
-    [1., 2., -1.],
-    [2., 4., 5.],
-    [3., -1., -2.]
-])
+X = np.array([[1.0, 2.0, -1.0], [2.0, 4.0, 5.0], [3.0, -1.0, -2.0]])
 
 X_1 = gauss_jordan_inverse(X)
 print(np.dot(X, X_1))
-

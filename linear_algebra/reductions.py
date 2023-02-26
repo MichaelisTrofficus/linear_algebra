@@ -48,12 +48,14 @@ def back_substitution(A, swaps=None, rref=False):
     """
     m, n = A.shape
     if rref:
-        solutions = A[:, n-1]
+        solutions = A[:, n - 1]
     else:
         solutions = np.zeros(m)
-        solutions[m - 1] = A[m-1, n-1] / A[m-1, n-2]
-        for i in range(m-2, -1, -1):
-            solutions[i] = (A[i, n-1] - np.dot(A[i, i+1:n-1], solutions[i+1:])) / A[i, i]
+        solutions[m - 1] = A[m - 1, n - 1] / A[m - 1, n - 2]
+        for i in range(m - 2, -1, -1):
+            solutions[i] = (
+                A[i, n - 1] - np.dot(A[i, i + 1 : n - 1], solutions[i + 1 :])
+            ) / A[i, i]
     return reorder_solution_array(solutions, swaps)
 
 
@@ -78,12 +80,14 @@ def forward_substitution(A, swaps=None, rref=False):
     """
     m, n = A.shape
     if rref:
-        solutions = A[:, n-1]
+        solutions = A[:, n - 1]
     else:
         solutions = np.zeros(m)
-        solutions[0] = A[0, n-1] / A[0, 0]
+        solutions[0] = A[0, n - 1] / A[0, 0]
         for i in range(1, m):
-            solutions[i] = (A[i, n-1] - np.dot(A[i, :i+1], solutions[:i+1])) / A[i, i]
+            solutions[i] = (
+                A[i, n - 1] - np.dot(A[i, : i + 1], solutions[: i + 1])
+            ) / A[i, i]
     return reorder_solution_array(solutions, swaps)
 
 
@@ -203,16 +207,15 @@ def gauss_seidel_method(A, b, max_iter=10):
     it = 0
 
     while it < max_iter:
-
         for i in range(m):
             if i == 0:
                 left_sum = 0
-                right_sum = np.dot(A[i, i+1:], solutions[i+1:])
+                right_sum = np.dot(A[i, i + 1 :], solutions[i + 1 :])
             elif i == m - 1:
                 right_sum = 0
                 left_sum = np.dot(A[i, :i], solutions[:i])
             else:
-                right_sum = np.dot(A[i, i + 1:], solutions[i + 1:])
+                right_sum = np.dot(A[i, i + 1 :], solutions[i + 1 :])
                 left_sum = np.dot(A[i, :i], solutions[:i])
 
             solutions[i] = (b[i] - right_sum - left_sum) / A[i, i]
@@ -223,13 +226,8 @@ def gauss_seidel_method(A, b, max_iter=10):
     return solutions
 
 
-X1 = np.array([
-    [4., -1., 1.],
-    [4., -8., 1.],
-    [-2., 1., 5.]
-])
+X1 = np.array([[4.0, -1.0, 1.0], [4.0, -8.0, 1.0], [-2.0, 1.0, 5.0]])
 
 b1 = np.array([7, -21, 15])
 
 X1_ref = gauss_seidel_method(X1, b1)
-
